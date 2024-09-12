@@ -1,0 +1,8 @@
+typer==0.12.5
+loguru==0.7.2
+yfinance==0.2.43
+numpy==2.1.1
+pandas==2.2.2
+matplotlib==3.9.2
+scipy==1.14.1
+# notebook==7.2.2
