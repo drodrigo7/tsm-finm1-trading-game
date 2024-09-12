@@ -30,11 +30,6 @@ _ = Analysis.optimal_portfolio_info(optimal_weights, top_mean_returns, top_cov_m
 
 
 
-
-
-
-
-
 # app = typer.Typer()
 # 
 # @app.command(hidden=True)

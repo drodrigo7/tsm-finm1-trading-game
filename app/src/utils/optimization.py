@@ -1,8 +1,14 @@
+# optimization.py
+# ==================================================
+# standard
 from typing import List, Any, Tuple, Collection
+# requirements
 import numpy as np
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
+# defined
 from constants.constants import MINIMUM_WEIGHT, MAXIMUM_WEIGHT
+# --------------------------------------------------
 
 class Optimization(object):
     
