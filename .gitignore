@@ -3,3 +3,5 @@ data/*
 assets/*
 !assets/.gitkeep
 !assets/*.ipynb
+temp/*
+!temp/.gitkeep

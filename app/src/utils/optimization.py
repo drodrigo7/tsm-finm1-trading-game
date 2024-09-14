@@ -26,12 +26,12 @@ class Optimization(object):
         return -sharpe_ratio
     
     @classmethod
-    def optimize_portfolio(cls, mean_returns: float, cov_matrix, tickers: List[str], risk_free_rate: float) -> Any:
+    def optimize_portfolio(cls, mean_returns: float, cov_matrix, risk_free_rate: float) -> Any:
         num_assets = len(mean_returns)
         args = (mean_returns, cov_matrix, risk_free_rate)
         constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
         bounds = tuple((MINIMUM_WEIGHT, MAXIMUM_WEIGHT) for _ in range(num_assets))
-        initial_weights = np.array([1/len(tickers)] * len(tickers))
+        initial_weights = np.array([1/num_assets] * num_assets)
         
         result = minimize(
             cls.negative_sharpe, initial_weights, args=args,
@@ -58,7 +58,7 @@ class Optimization(object):
     @staticmethod
     def efficient_frontier_plot(results: Collection) -> None:
         plt.figure(figsize=(10, 7))
-        plt.scatter(results[1,:], results[0,:], c=results[2,:], cmap='YlGnBu', marker='o')
+        plt.scatter(results[1,:], results[0,:], c=results[2,:], cmap='Greys', marker='o')
         plt.colorbar(label='Sharpe Ratio')
         plt.xlabel('Risk (Standard Deviation)')
         plt.ylabel('Return')
