@@ -1,7 +1,7 @@
 # service.py
 # ==================================================
 # standard
-from typing import Any, Collection, Tuple, List
+from typing import Any, Collection, Tuple, List, Dict
 import os
 # requirements
 import yfinance as yf
@@ -21,7 +21,7 @@ class Analysis(object):
         return data
     
     @staticmethod
-    def read_investing_csv_files(dir_path: str) -> pandas.DataFrame:
+    def read_investing_csv(dir_path: str) -> pandas.DataFrame:
         '''Raw data from investing.com to Pandas Dataframe'''
         rd_dir = dir_path.strip('/')
         ap_func = lambda rd_dir, f: {'path': f'{rd_dir}/{f}', 'code': f.split('.')[0]}
@@ -37,9 +37,33 @@ class Analysis(object):
         return data.dropna()
     
     @staticmethod
+    def read_nasdaq_csv(dir_path: str) -> pandas.DataFrame:
+        '''Raw data from nasdaq.com to Pandas Dataframe'''
+        rd_dir = dir_path.strip('/')
+        ap_func = lambda rd_dir, f: {'path': f'{rd_dir}/{f}', 'code': f.split('.')[0]}
+        investing_files = [ap_func(rd_dir, f) for f in os.listdir(rd_dir)]
+        
+        data = pandas.DataFrame()
+        for f in investing_files:
+            _df = pandas.read_csv(f['path'], usecols=['Date', 'Close/Last'])
+            _df = _df.rename(columns={'Close/Last': f['code']})
+            _df['Date'] = pandas.to_datetime(_df['Date'], format='%m/%d/%Y')
+            _df = _df.set_index('Date').sort_index()
+            data = pandas.concat([data, _df], axis=1)
+        return data.dropna()
+    
+    @staticmethod
     def daily_log_returns(data: pandas.DataFrame) -> Any:
         '''Log daily returns as ln(Pt/Pt-1).'''
         return np.log(data).diff().dropna()
+    
+    @staticmethod
+    def estimate_assets_beta(returns: pandas.DataFrame, benchmark_returns: pandas.Series) -> Dict[str, float]:
+        assets_beta = {}
+        for a in returns.columns:
+            covariance_matrix = np.cov(returns[a], benchmark_returns)
+            assets_beta[a] = covariance_matrix[0, 1] / covariance_matrix[1, 1]
+        return assets_beta
     
     @staticmethod
     def annualized_sharpe_ratio(returns: Any) -> Collection:
@@ -56,6 +80,14 @@ class Analysis(object):
         sortino_ratios = ((mean_returns - RISK_FREE_RATE) / neg_volatility).sort_values(ascending=0)
         sortino_ratios.name = 'sortino_ratio'
         return sortino_ratios
+    
+    @staticmethod
+    def estimate_jensen_alpha(assets_beta: Any, returns: pandas.DataFrame, benchmark_returns: pandas.Series):
+        market_excess_return = (np.exp(np.mean(benchmark_returns) * TRADING_DAYS_YEAR) - 1) - RISK_FREE_RATE
+        mean_returns = np.exp(returns.mean() * TRADING_DAYS_YEAR) - 1
+        jensen_alpha = mean_returns - (RISK_FREE_RATE + np.array([v for v in assets_beta.values()]) * market_excess_return)
+        jensen_alpha.name = 'jensen_alpha'
+        return jensen_alpha
     
     @staticmethod
     def top_sorted_sortino(sortino_ratios: Collection) -> Any:
