@@ -1,7 +1,4 @@
 data/*
 !data/.gitkeep
-assets/*
-!assets/.gitkeep
-!assets/*.ipynb
 temp/*
 !temp/.gitkeep
